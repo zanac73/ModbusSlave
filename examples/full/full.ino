@@ -206,7 +206,7 @@ uint8_t writeMemory(uint8_t fc, uint16_t address, uint16_t length, void *context
             // Store the received value in the EEPROM.
             EEPROM.put(address + i, value);
 
-            // Set the pinmode to the received value.
+            // Set the pin mode to the received value.
             pinMode(digital_pins[address + i], value);
         }
         else

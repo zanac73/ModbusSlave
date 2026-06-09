@@ -15,8 +15,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF  THIS SOFTWARE.
  */
 
-#ifndef MODBUSSLAVE_H
-#define MODBUSSLAVE_H
+#ifndef SRC_MODBUSSLAVE_H_
+#define SRC_MODBUSSLAVE_H_
+
 #include <Arduino.h>
 
 #define MODBUS_MAX_BUFFER 256
@@ -24,7 +25,7 @@
 #define MODBUS_DEFAULT_UNIT_ADDRESS 1
 #define MODBUS_CONTROL_PIN_NONE -1
 
-// CRC Calc with CRC Lookup Table. Save CPU Cicles.
+// CRC Calc with CRC Lookup Table. Save CPU Cycles.
 // #define CRC_LTABLE_CALC
 
 
@@ -127,7 +128,7 @@ using ModbusCallback = uint8_t (*)(uint8_t, uint16_t, uint16_t, void*);
 class ModbusSlave
 {
 public:
-  ModbusSlave(uint8_t unitAddress = MODBUS_DEFAULT_UNIT_ADDRESS);
+  explicit ModbusSlave(uint8_t unitAddress = MODBUS_DEFAULT_UNIT_ADDRESS);
   uint8_t getUnitAddress();
   void setUnitAddress(uint8_t unitAddress);
   ModbusCallback cbVector[CB_MAX];
@@ -142,17 +143,30 @@ private:
 class Modbus
 {
 public:
-  Modbus(uint8_t unitAddress = MODBUS_DEFAULT_UNIT_ADDRESS, int transmissionControlPin = MODBUS_CONTROL_PIN_NONE);
-  Modbus(ModbusSlave *slaves, uint8_t numberOfSlaves, int transmissionControlPin = MODBUS_CONTROL_PIN_NONE);
+  explicit Modbus(uint8_t unitAddress = MODBUS_DEFAULT_UNIT_ADDRESS,
+                  int transmissionControlPin = MODBUS_CONTROL_PIN_NONE);
+  Modbus(ModbusSlave *slaves,
+         uint8_t numberOfSlaves,
+         int transmissionControlPin = MODBUS_CONTROL_PIN_NONE);
+
 #if defined(ARDUINO_SAM_DUE)
-  Modbus(UARTClass &serialStream, uint8_t unitAddress = MODBUS_DEFAULT_UNIT_ADDRESS, int transmissionControlPin = MODBUS_CONTROL_PIN_NONE);
-  Modbus(UARTClass &serialStream, ModbusSlave *slaves, uint8_t numberOfSlaves, int transmissionControlPin = MODBUS_CONTROL_PIN_NONE);
+  explicit Modbus(UARTClass &serialStream,
+                  uint8_t unitAddress = MODBUS_DEFAULT_UNIT_ADDRESS,
+                  int transmissionControlPin = MODBUS_CONTROL_PIN_NONE);
+  Modbus(UARTClass &serialStream, ModbusSlave *slaves,
+         uint8_t numberOfSlaves,
+         int transmissionControlPin = MODBUS_CONTROL_PIN_NONE);
 #else
-  Modbus(Stream &serialStream, uint8_t unitAddress = MODBUS_DEFAULT_UNIT_ADDRESS, int transmissionControlPin = MODBUS_CONTROL_PIN_NONE);
-  Modbus(Stream &serialStream, ModbusSlave *slaves, uint8_t numberOfSlaves, int transmissionControlPin = MODBUS_CONTROL_PIN_NONE);
+  explicit Modbus(Stream &serialStream,
+                  uint8_t unitAddress = MODBUS_DEFAULT_UNIT_ADDRESS,
+                  int transmissionControlPin = MODBUS_CONTROL_PIN_NONE);
+  Modbus(Stream &serialStream,
+         ModbusSlave *slaves,
+         uint8_t numberOfSlaves,
+         int transmissionControlPin = MODBUS_CONTROL_PIN_NONE);
 #endif
 
-  void begin(uint64_t boudRate);
+  void begin(uint64_t baudRate);
   void setUnitAddress(uint8_t unitAddress);
   void enable();
   void disable();
@@ -176,13 +190,6 @@ public:
 
   void setCallbackContext(void* pModbusCallbackContext) noexcept;
 
-  // This cbVector is a pointer to cbVector of the first slave, to allow shorthand syntax:
-  //     Modbus slave(SLAVE_ID, CTRL_PIN);
-  //     slave.cbVector[CB_WRITE_COILS] = writeDigitalOut;
-  // Instead of the complete:
-  //     ModbusSlave slaves[1] = { ModbusSlave(ID_SLAVE_1) };
-  //     Modbus modbus(slaves, 1);
-  //     slaves[0].cbVector[CB_WRITE_COILS] = writeDigitalOut;
   ModbusCallback *cbVector;
 
 private:
@@ -205,14 +212,14 @@ private:
 
   int _transmissionControlPin = MODBUS_CONTROL_PIN_NONE;
 
-  uint16_t _halfCharTimeInMicroSecond;
-  uint64_t _lastCommunicationTime;
+  uint16_t _halfCharTimeInMicroSecond = 0;
+  uint64_t _lastCommunicationTime = 0;
 
-  uint8_t _requestBuffer[MODBUS_MAX_BUFFER];
+  uint8_t _requestBuffer[MODBUS_MAX_BUFFER] = {0};
   uint16_t _requestBufferLength = 0;
   bool _isRequestBufferReading = false;
 
-  uint8_t _responseBuffer[MODBUS_MAX_BUFFER];
+  uint8_t _responseBuffer[MODBUS_MAX_BUFFER] = {0};
   uint16_t _responseBufferLength = 0;
   bool _isResponseBufferWriting = false;
   uint16_t _responseBufferWriteIndex = 0;
@@ -231,4 +238,5 @@ private:
   uint16_t reportException(uint8_t exceptionCode);
   uint16_t calculateCRC(uint8_t *buffer, int length);
 };
-#endif
+
+#endif // SRC_MODBUSSLAVE_H_
