@@ -22,7 +22,7 @@
 
 // RS485 Modbus Interface 
 #define RS485_BAUDRATE 	9600 						// Baudrate for Modbus communication.
-#define RS485_SERIAL 	Serial2   					// Serial port for Modbus communication.
+#define RS485_SERIAL 	Serial   					// Serial port for Modbus communication.
 #define RS485_CTRL_PIN	MODBUS_CONTROL_PIN_NONE 	// GPIO number for Control pin (optionally)
 
 // Pointer to Modbus slave object
