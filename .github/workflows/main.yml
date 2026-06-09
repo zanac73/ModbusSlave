@@ -1,0 +1,50 @@
+name: Arduino CLI Build
+
+on: [push]
+
+env:
+  ACT: "false"
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        example: [ context, full, minimum, multi, simple ]
+        board: [arduino:avr:nano] # fqbn
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Arduino CLI
+        if: ${{ env.ACT == 'false' }}
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Cache Arduino Config and Pip
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.arduino15
+            ~/Arduino/libraries
+          key: ${{ runner.os }}-arduino-${{ hashFiles('**/*.ino') }}
+          restore-keys: |
+            ${{ runner.os }}-arduino-
+
+      - name: Update board index
+        run: |
+          if [ "$ACT" = "true" ]; then
+            echo "Local run: skipping board index update"
+          else
+            arduino-cli core update-index
+            arduino-cli core install arduino:avr
+          fi
+
+      - name: Build examples ${{ matrix.example }}
+        run: |+
+          arduino-cli compile \
+            --library . \
+            --library $HOME/Arduino/libraries \
+            --fqbn ${{ matrix.board }} \
+            examples/${{ matrix.example }}/${{ matrix.example }}.ino
