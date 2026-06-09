@@ -35,3 +35,6 @@ build
 .gcc-flags.json
 /.vscode/*
 **/.vscode/*
+
+# Build folder
+Build
